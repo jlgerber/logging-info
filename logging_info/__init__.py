@@ -46,8 +46,16 @@ class LoggerPlaceHolderInfo(object):
     """
     def __init__(self, name, placeholder):
         self.name = name
-        self.handlers = []
-        self.filters = []
+        self.__handlers = frozenset([])
+        self.__filters = frozenset([])
+
+    @property
+    def handlers(self):
+        return self.__handlers
+
+    @property
+    def filters(self):
+        return self.__filters
 
     def __repr__(self):
         return "<LoggerPlaceHolderInfo name: {}>".format(self.name)

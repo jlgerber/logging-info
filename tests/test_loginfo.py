@@ -4,7 +4,7 @@ from .context import logging_info
 import unittest
 import logging
 
-class TestBasic(unittest.TestCase):
+class TestBasicLogInfo(unittest.TestCase):
     def setUp(self):
         logging.basicConfig()
         self.root_logger = logging.getLogger()
@@ -48,7 +48,6 @@ class TestBasic(unittest.TestCase):
             self.foo_logger.removeHandler(ch)
 
     def test_logInfo_corectly_reports_set_filter(self):
-
         class ContextFilter(logging.Filter):
             """
             test filter from python documentation
