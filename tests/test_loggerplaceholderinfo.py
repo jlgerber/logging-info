@@ -21,10 +21,11 @@ class TestBasicLoggerPlaceHolderInfo(unittest.TestCase):
 
     def test_init_loggerplaceholderinfo_cannot_mutate_handlers(self):
         placeholder_info = logging_info.LoggerPlaceHolderInfo('foo',self.placeholder)
-        self.assertEqual(len(placeholder_info.handlers), 0)
+        # try and replace handlers
         with self.assertRaises(AttributeError) as context:
             placeholder_info.handlers = ['foo']
         self.assertTrue("can't set attribute" in context.exception)
+        # try and append to handlers
         with self.assertRaises(AttributeError) as context:
             placeholder_info.handlers.append("foo")
         self.assertTrue("'frozenset' object has no attribute 'append'")
@@ -32,9 +33,11 @@ class TestBasicLoggerPlaceHolderInfo(unittest.TestCase):
     def test_init_loggerplaceholderinfo_cannot_mutate_filters(self):
         placeholder_info = logging_info.LoggerPlaceHolderInfo('foo',self.placeholder)
         self.assertEqual(len(placeholder_info.handlers), 0)
+        # try and replace filters
         with self.assertRaises(AttributeError) as context:
             placeholder_info.filters = ['foo']
         self.assertTrue("can't set attribute" in context.exception)
+        # try and append to filters
         with self.assertRaises(AttributeError) as context:
             placeholder_info.filters.append("foo")
         self.assertTrue("'frozenset' object has no attribute 'append'")
