@@ -1,7 +1,6 @@
 
 import logging
 
-
 class HandlerInfo(object):
     """
     Logging Handler Info - provides basic info about a logging Handler
@@ -39,6 +38,9 @@ class HandlerInfo(object):
     def __repr__(self):
         return "<HandlerInfo name: {} class: {} level: {} formatter: {} filters: {}>".format(self.name, self.class_name, self.level, self.has_formatter, self.filter_cnt)
 
+    def __str__(self):
+        return "{} (HandlerInfo {{class:'{}', level:{}, formatter:{}, filters:{}}})".format(self.name, self.class_name, self.level, self.has_formatter, self.filter_cnt)
+
 class FormatterInfo(object):
     def __init__(self, format_string):
         self.fmt = format_string
@@ -52,6 +54,9 @@ class FormatterInfo(object):
 
     def __repr__(self):
         return "<FormatterInfo fmt: {}>".format(self.fmt)
+
+    def __str__(self):
+        return "(FormatterInfo {{fmt:'{}'}})".format(self.fmt)
 
 class FilterInfo(object):
     """
@@ -71,8 +76,10 @@ class FilterInfo(object):
         return cls(filter.__class__.__name__)
 
     def __repr__(self):
-        return "<FilterInfo class: {} formatter: {}>".format(self.class_name)
+        return "<FilterInfo class: {}>".format(self.class_name)
 
+    def __str__(self):
+        return "{} (FilterInfo {{class:'{}'}})".format(self.class_name)
 
 class LoggerInfo(object):
     """
@@ -123,6 +130,8 @@ class LoggerInfo(object):
     def __repr__(self):
         return "<LoggerInfo name: '{}' level: {} propagate: {} handlers: {} filters: {}>".format(self.name, self.level, self.propagate, self.handler_cnt, self.filter_cnt)
 
+    def __str__(self):
+        return "{} (LoggerInfo {{level:'{}', propagate:{}, handlers:{}, filters:{}}})".format(self.name, self.level, self.propagate, self.handler_cnt, self.filter_cnt)
 
 class LoggerPlaceHolderInfo(object):
     """
@@ -155,6 +164,9 @@ class LoggerPlaceHolderInfo(object):
 
     def __repr__(self):
         return "<LoggerPlaceHolderInfo name: '{}'>".format(self.name)
+
+    def __str__(self):
+        return "{} (LoggerPlaceHolderInfo)".format(self.name)
 
 class InfoFactory(object):
     """
@@ -282,24 +294,76 @@ class LoggerMgrInfo(object):
         logger = self.mgr.loggerDict.get(name)
         return self.__info_factory.create(name, logger)
 
+class bgcolors(object):
+    def __init__(self, use_colors):
+        self.use_colors = use_colors
+    @property
+    def HEADER(self):
+        if self.use_colors:
+            return '\033[95m'
+        return ''
 
-def print_logging_info(mgrinfo=None, tab_size=3):
+    @property
+    def OKBLUE(self):
+        if self.use_colors:
+            return '\033[94m'
+        return ''
+
+    @property
+    def OKGREEN(self):
+        if self.use_colors:
+            return '\033[92m'
+        return ''
+
+    @property
+    def WARNING(self):
+        if self.use_colors:
+            return '\033[93m'
+        return ''
+
+    @property
+    def FAIL(self):
+        if self.use_colors:
+            return '\033[91m'
+        return ''
+
+    @property
+    def ENDC(self):
+        if self.use_colors:
+            return '\033[0m'
+        return ''
+
+    @property
+    def BOLD(self):
+        if self.use_colors:
+            return '\033[1m'
+        return ''
+
+    @property
+    def UNDERLINE(self):
+        if self.use_colors:
+            return '\033[4m'
+        return ''
+
+def print_logging_info(mgrinfo=None, tab_size=3, colors=True):
     """
     Given an optional manager info instance, print out the logging hierarchy
     """
+    bcolors = bgcolors(colors)
+
     tsize = tab_size
     if mgrinfo == None:
         mgrinfo = LoggerMgrInfo()
     for x in mgrinfo.loggers:
-        print x
+        print bcolors.OKBLUE + str(x) + bcolors.ENDC
         if x.handler_cnt > 0:
             for y in x.handlers:
-                print ("\t{}".format(y)).expandtabs(tsize)
+                print bcolors.OKGREEN + ("\t{}".format(y)).expandtabs(tsize) + bcolors.ENDC
                 if y.has_formatter:
-                    print ("\t\t{}".format(y.formatter)).expandtabs(tsize)
+                    print bcolors.WARNING + ("\t\t{}".format(y.formatter)).expandtabs(tsize)
                 if y.filter_cnt > 0:
                     for z in y.filters:
-                        print ("\t\t{}".format(z)).expandtabs(tsize)
+                        print bcolors.FAIL + ("\t\t{}".format(z)).expandtabs(tsize) + bcolors.ENDC
         if x.filter_cnt > 0:
             for y in x.filters:
-                print ("\t{}".format(y)).expandtabs(tsize)
+                print  bcolors.FAIL + ("\t{}".format(y)).expandtabs(tsize) + bcolors.ENDC
