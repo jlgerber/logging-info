@@ -8,5 +8,5 @@ class TestBasicFilterInfo(unittest.TestCase):
         self.context_filter = ContextFilter()
 
     def test_filterInfo_class_set(self):
-        cfi = logging_info.FilterInfo(self.context_filter)
+        cfi = logging_info.FilterInfo.from_logging(self.context_filter)
         self.assertEquals(cfi.class_name, "ContextFilter")

@@ -8,19 +8,20 @@ class TestBasicLoggerPlaceHolderInfo(unittest.TestCase):
         self.placeholder = logging.PlaceHolder('foo')
 
     def test_init_loggerplaceholderinfo_works(self):
-        placeholder_info = logging_info.LoggerPlaceHolderInfo('foo',self.placeholder)
+        placeholder_info = \
+        logging_info.LoggerPlaceHolderInfo.from_logging('foo',self.placeholder)
         self.assertEquals(placeholder_info.name, 'foo')
 
     def test_init_loggerplaceholderinfo_filters_empty(self):
-        placeholder_info = logging_info.LoggerPlaceHolderInfo('foo',self.placeholder)
+        placeholder_info = logging_info.LoggerPlaceHolderInfo.from_logging('foo',self.placeholder)
         self.assertEqual(len(placeholder_info.filters),0)
 
     def test_init_loggerplaceholderinfo_handlers_empty(self):
-        placeholder_info = logging_info.LoggerPlaceHolderInfo('foo',self.placeholder)
+        placeholder_info = logging_info.LoggerPlaceHolderInfo.from_logging('foo',self.placeholder)
         self.assertEqual(len(placeholder_info.handlers),0)
 
     def test_init_loggerplaceholderinfo_cannot_mutate_handlers(self):
-        placeholder_info = logging_info.LoggerPlaceHolderInfo('foo',self.placeholder)
+        placeholder_info = logging_info.LoggerPlaceHolderInfo.from_logging('foo',self.placeholder)
         # try and replace handlers
         with self.assertRaises(AttributeError) as context:
             placeholder_info.handlers = ['foo']
@@ -31,7 +32,7 @@ class TestBasicLoggerPlaceHolderInfo(unittest.TestCase):
         self.assertTrue("'frozenset' object has no attribute 'append'")
 
     def test_init_loggerplaceholderinfo_cannot_mutate_filters(self):
-        placeholder_info = logging_info.LoggerPlaceHolderInfo('foo',self.placeholder)
+        placeholder_info = logging_info.LoggerPlaceHolderInfo.from_logging('foo',self.placeholder)
         self.assertEqual(len(placeholder_info.handlers), 0)
         # try and replace filters
         with self.assertRaises(AttributeError) as context:
