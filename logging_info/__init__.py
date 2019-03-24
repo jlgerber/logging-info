@@ -10,9 +10,25 @@ class HandlerInfo(object):
         self.name = handler.name
         self.class_name = handler.__class__.__name__
         self.level = handler.level
-        self.filters = [FilterInfo(x) for x in handler.filters]
+        self.__filters = [FilterInfo(x) for x in handler.filters]
+
+    @property
+    def filter_cnt(self):
+        """
+        The number of filters registered against this Handler
+        """
+        return len(self.__filters)
+
+    @property
+    def filters(self):
+        """
+        A generator that yields the filters for this Handler
+        """
+        for filter in self.__filters:
+            yield filter
+
     def __repr__(self):
-        return "<HandlerInfo name: {} class: {} level: {} filters: {}>".format(self.name, self.class_name, self.level, len(self.filters))
+        return "<HandlerInfo name: {} class: {} level: {} filters: {}>".format(self.name, self.class_name, self.level, self.filter_cnt)
 
 class FilterInfo(object):
     """
@@ -33,11 +49,41 @@ class LoggerInfo(object):
         assert logger.name == name, "logging name mismatch {} != {}".format(name, logger.name)
         self.name = logger.name
         self.level = logger.level
-        self.handlers = [HandlerInfo(x) for x in logger.handlers]
-        self.filters = [FilterInfo(x) for x in logger.filters]
+        self.__handlers = [HandlerInfo(x) for x in logger.handlers]
+        self.__filters = [FilterInfo(x) for x in logger.filters]
+
+    @property
+    def handlers(self):
+        """
+        A generator which yields the handlers registered with this Logger
+        """
+        for handler in self.__handlers:
+            yield handler
+
+    @property
+    def handler_cnt(self):
+        """
+        The number of handlers registered with this Logger
+        """
+        return len(self.__handlers)
+
+    @property
+    def filters(self):
+        """
+        A generator which yields the filters associated with this Logger.
+        """
+        for filter in self.__filters:
+            yield filter
+
+    @property
+    def filter_cnt(self):
+        """
+        The number of filters registered with this Logger
+        """
+        return len(self.__filters)
 
     def __repr__(self):
-        return "<LoggerInfo name: {} level: {} handlers: {} filters: {}>".format(self.name, self.level, len(self.handlers), len(self.filters))
+        return "<LoggerInfo name: {} level: {} handlers: {} filters: {}>".format(self.name, self.level, self.handler_cnt, self.filter_cnt)
 
 
 class LoggerPlaceHolderInfo(object):
@@ -61,21 +107,60 @@ class LoggerPlaceHolderInfo(object):
         return "<LoggerPlaceHolderInfo name: {}>".format(self.name)
 
 class InfoFactory(object):
+    """
+    Tracks mapping between logging classes and logging_info classes
+    and provides means to instantiate one from the other via the
+    `create` method.
+
+    InfoFactory follows the builder pattern, meaning one inits
+    an empty InfoFactory and calls the `register` method repeatedly
+    to register logging_info classes.
+    """
     def __init__(self):
+        """
+        Initialize an empty InfoFactory
+        """
         self._registry = {}
 
     def register(self, logging_cls, info_cls):
+        """
+        Register a logging_info class for a given logging class.
+
+        :param logging_cls: The logging class to register against.
+        :type logging_cls: A class in the logging package
+
+        :param info_cls: The logging_info class we wish to associate with
+        the previously supplied logging_cls.
+        :type info_cls: A class in the logging_info package
+
+        :returns: self, to facilitate the builder pattern.
+        """
         self._registry[logging_cls] = info_cls
         return self
 
     def create(self, name, instance):
+        """
+        Instantiate an instance of the appropriate logging_info class, given
+        a name and an instance of a logging class.
+
+        :param name: The name of the entity we are going to instantiate
+        :type name: str
+
+        :param instance: an instance of a logging class (eg Logger)
+        :type instance: logging.Logger, logging.PlaceHolder, etc
+
+        :raises: KeyError if the supplied instance's class is not a key
+        in the internal registry
+
+        :returns: An instance of the logging_info class associated with the supplied
+        logging class
+        """
         if not self._registry.has_key(instance.__class__):
             raise KeyError("InfoFactory does not have {} class registered. Keys:{}".format(instance.__class__.__name__, self._registry.keys()))
 
         for k,v in self._registry.iteritems():
             if isinstance(instance, k):
                 return v(name, instance)
-
 
 def default_info_factory():
     """
@@ -91,20 +176,34 @@ class LoggerMgrInfo(object):
     Provides basic information about the logging.Manager
     """
     def __init__(self, info_factory=default_info_factory()):
-        import logging
+        """
+        Initialize the LoggerMgrInfo, given an InfoFactory instance.
+
+        :param info_factory: An optional instance of an InfoFactory. If none
+        is explicitly supplied, we create a default InfoFactory, which should
+        suffice under normal circumstances.
+        :type info_factory: InfoFactory
+        """
         self.__info_factory = info_factory
         root = logging.getLogger()
         self.mgr = root.manager
-        self.__loggers = self._loggers()
+        self.__loggers = [self.logger(x) for x in self.logger_names()]
 
-    def _loggers(self):
-        return [self.logger(x) for x in self.logger_names()]
-
+    @property
     def loggers(self):
         """
-        Get a list of loggers
+        Get a list of loggers, starting with the root logger, and
+        followed by the rest of the loggers in alphabetical order.
+        :returns: logging_info.LoggerInfo and logging_info.PlaceHolderInfo instances
         """
         return self.__loggers
+
+    @property
+    def logger_cnt(self):
+        """
+        Return the number of loggers that the manager is managing.
+        """
+        return len(self.__loggers)
 
     def logger_names(self):
         """
@@ -118,17 +217,20 @@ class LoggerMgrInfo(object):
 
     def logger(self, name):
         """
-        Get a logging info instance with the provided name
+        Get a logging info instance with the provided name.
+
+        :param name: The name of the logger to fetch.
+        :type name: string
+        :raises: KeyError, if a `name`ed logger does not exists
+        :returns: instance of class registered with internal the InfoFactory.
+        This should typically be an instance of logging_info.LoggerInfo or
+        logging_info.PlaceHolderInfo.
         """
         if name == 'root':
             return LoggerInfo("root", self.mgr.root)
 
         logger = self.mgr.loggerDict.get(name)
         return self.__info_factory.create(name, logger)
-        # if isinstance(logger, logging.Logger):
-        #     return LoggerInfo(logger)
-        # elif isinstance(logger, logging.PlaceHolder):
-        #     return LoggerPlaceholderInfo(name, logger)
 
 
 def print_logging_info(mgrinfo=None):
@@ -137,23 +239,14 @@ def print_logging_info(mgrinfo=None):
     """
     if mgrinfo == None:
         mgrinfo = LoggerMgrInfo()
-    for x in mgrinfo.loggers():
+    for x in mgrinfo.loggers:
         print x
-        if len(x.handlers) > 0:
+        if x.handler_cnt > 0:
             for y in x.handlers:
                 print "\t{}".format(y)
-                if len(y.filters) > 0:
+                if y.filter_cnt > 0:
                     for z in y.filters:
                         print "\t\t{}".format(z)
-        if len(x.filters) > 0:
+        if x.filter_cnt > 0:
             for y in x.filters:
                 print "\t{}".format(y)
-
-
-if __name__ == '__main__':
-    import logging
-    logger = logging.basicConfig()
-    rl = logging.getLogger()
-    fool = logging.getLogger('foo')
-    fool.level=20
-    print_logging_info()

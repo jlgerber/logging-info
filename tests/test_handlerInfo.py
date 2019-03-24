@@ -14,7 +14,8 @@ class TestBasicHandlerInfo(unittest.TestCase):
         self.assertEquals(handler.name, None)
         self.assertEquals(handler.class_name, "StreamHandler")
         self.assertEqual(handler.level, 10)
-        self.assertEqual(handler.filters, [])
+        self.assertEqual([x for x in handler.filters], [])
+        self.assertEqual(handler.filter_cnt, 0)
 
     def test_handlerInfo_set_name_recognized(self):
         try:
@@ -23,7 +24,8 @@ class TestBasicHandlerInfo(unittest.TestCase):
             self.assertEquals(handler.name, "stream")
             self.assertEquals(handler.class_name, "StreamHandler")
             self.assertEqual(handler.level, 10)
-            self.assertEqual(handler.filters, [])
+            self.assertEqual([x for x in handler.filters], [])
+            self.assertEqual(handler.filter_cnt, 0)
         finally:
             self.stream_handler.set_name(None)
 
@@ -35,7 +37,8 @@ class TestBasicHandlerInfo(unittest.TestCase):
             self.assertEquals(handler.name, None)
             self.assertEquals(handler.class_name, "StreamHandler")
             self.assertEqual(handler.level, 10)
-            self.assertEqual(len(handler.filters), 1)
-            self.assertEqual(handler.filters[0].__class__.__name__, "FilterInfo")
+            self.assertEqual(len([x for x in handler.filters]), 1)
+            self.assertEqual(handler.filter_cnt, 1)
+            self.assertEqual(next(handler.filters).__class__.__name__, "FilterInfo")
         finally:
             self.stream_handler.removeFilter(fltr)
