@@ -10,7 +10,16 @@ class HandlerInfo(object):
         self.name = handler.name
         self.class_name = handler.__class__.__name__
         self.level = handler.level
-        self.__filters = [FilterInfo(x) for x in handler.filters]
+        self.__formatter = FormatterInfo.from_logging(handler.formatter) if not handler.formatter is None else None
+        self.__filters = [FilterInfo.from_logging(x) for x in handler.filters]
+
+    @property
+    def formatter(self):
+        return self.__formatter
+
+    @property
+    def has_formatter(self):
+        return not self.__formatter is None
 
     @property
     def filter_cnt(self):
@@ -28,29 +37,58 @@ class HandlerInfo(object):
             yield filter
 
     def __repr__(self):
-        return "<HandlerInfo name: {} class: {} level: {} filters: {}>".format(self.name, self.class_name, self.level, self.filter_cnt)
+        return "<HandlerInfo name: {} class: {} level: {} formatter: {} filters: {}>".format(self.name, self.class_name, self.level, self.has_formatter, self.filter_cnt)
+
+class FormatterInfo(object):
+    def __init__(self, format_string):
+        self.fmt = format_string
+
+    @classmethod
+    def from_logging(cls, formatter):
+        """
+        Initialize a FormatterInfo instance with a logging.Formattter
+        """
+        return cls(formatter._fmt)
+
+    def __repr__(self):
+        return "<FormatterInfo fmt: {}>".format(self.fmt)
 
 class FilterInfo(object):
     """
     Provides basic information about a logging.Filter
     """
-    def __init__(self, filter):
-        self.class_name = filter.__class__.__name__
+    def __init__(self, class_name):
+        """
+        Initialize a FilterInfo instance with a class_name of the filter
+        """
+        self.class_name = class_name
+
+    @classmethod
+    def from_logging(cls, filter):
+        """
+        Given a logging.Filter, return a FilterInfo instance
+        """
+        return cls(filter.__class__.__name__)
 
     def __repr__(self):
-        return "<FilterInfo class: {}>".format(self.class_name)
+        return "<FilterInfo class: {} formatter: {}>".format(self.class_name)
 
 
 class LoggerInfo(object):
     """
     Provides basic information about a logging.Logger
     """
-    def __init__(self, name, logger):
+    def __init__(self, name, level, propagate, handlers, filters):
+        self.name = name
+        self.level = level
+        self.propagate = propagate
+        self.__handlers = [HandlerInfo(x) for x in handlers]
+        self.__filters = [FilterInfo.from_logging(x) for x in filters]
+
+    @classmethod
+    def from_logging(cls, name, logger):
         assert logger.name == name, "logging name mismatch {} != {}".format(name, logger.name)
-        self.name = logger.name
-        self.level = logger.level
-        self.__handlers = [HandlerInfo(x) for x in logger.handlers]
-        self.__filters = [FilterInfo(x) for x in logger.filters]
+        return cls(name, logger.level, True if logger.propagate else False, logger.handlers, logger.filters )
 
     @property
     def handlers(self):
@@ -83,28 +121,40 @@ class LoggerInfo(object):
         return len(self.__filters)
 
     def __repr__(self):
-        return "<LoggerInfo name: {} level: {} handlers: {} filters: {}>".format(self.name, self.level, self.handler_cnt, self.filter_cnt)
+        return "<LoggerInfo name: '{}' level: {} propagate: {} handlers: {} filters: {}>".format(self.name, self.level, self.propagate, self.handler_cnt, self.filter_cnt)
 
 
 class LoggerPlaceHolderInfo(object):
     """
     Provides basic information about a logging.LoggerPlaceholder
     """
-    def __init__(self, name, placeholder):
+    def __init__(self, name):
         self.name = name
         self.__handlers = frozenset([])
         self.__filters = frozenset([])
+
+    @classmethod
+    def from_logging(cls, name, placeholder):
+        return cls(name)
 
     @property
     def handlers(self):
         return self.__handlers
 
     @property
+    def handler_cnt(self):
+        return 0
+
+    @property
     def filters(self):
         return self.__filters
 
+    @property
+    def filter_cnt(self):
+        return 0
+
     def __repr__(self):
-        return "<LoggerPlaceHolderInfo name: {}>".format(self.name)
+        return "<LoggerPlaceHolderInfo name: '{}'>".format(self.name)
 
 class InfoFactory(object):
     """
@@ -160,7 +210,7 @@ class InfoFactory(object):
 
         for k,v in self._registry.iteritems():
             if isinstance(instance, k):
-                return v(name, instance)
+                return v.from_logging(name, instance)
 
 def default_info_factory():
     """
@@ -227,26 +277,29 @@ class LoggerMgrInfo(object):
         logging_info.PlaceHolderInfo.
         """
         if name == 'root':
-            return LoggerInfo("root", self.mgr.root)
+            return LoggerInfo.from_logging("root", self.mgr.root)
 
         logger = self.mgr.loggerDict.get(name)
         return self.__info_factory.create(name, logger)
 
 
-def print_logging_info(mgrinfo=None):
+def print_logging_info(mgrinfo=None, tab_size=3):
     """
     Given an optional manager info instance, print out the logging hierarchy
     """
+    tsize = tab_size
     if mgrinfo == None:
         mgrinfo = LoggerMgrInfo()
     for x in mgrinfo.loggers:
         print x
         if x.handler_cnt > 0:
             for y in x.handlers:
-                print "\t{}".format(y)
+                print ("\t{}".format(y)).expandtabs(tsize)
+                if y.has_formatter:
+                    print ("\t\t{}".format(y.formatter)).expandtabs(tsize)
                 if y.filter_cnt > 0:
                     for z in y.filters:
-                        print "\t\t{}".format(z)
+                        print ("\t\t{}".format(z)).expandtabs(tsize)
         if x.filter_cnt > 0:
             for y in x.filters:
-                print "\t{}".format(y)
+                print ("\t{}".format(y)).expandtabs(tsize)
