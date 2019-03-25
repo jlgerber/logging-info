@@ -78,13 +78,13 @@ def doit():
     ad_log = logging.getLogger("ad."+ __name__)
 
     root_log.debug("a root debug message")
-    ad_log.debug("a ad debug message")
+    ad_log.debug("an ad debug message")
 
     root_log.info("a root info message")
-    ad_log.info("a ad info message")
+    ad_log.info("an ad info message")
 
     root_log.warn("a root warn message")
-    ad_log.warn("a ad warn message")
+    ad_log.warn("an ad warn message")
 
 
 if __name__ == "__main__":
