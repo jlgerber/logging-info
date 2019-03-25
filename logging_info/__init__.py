@@ -39,7 +39,7 @@ class HandlerInfo(object):
         return "<HandlerInfo name: {} class: {} level: {} formatter: {} filters: {}>".format(self.name, self.class_name, self.level, self.has_formatter, self.filter_cnt)
 
     def __str__(self):
-        return "{} (HandlerInfo {{class:'{}', level:{}, formatter:{}, filters:{}}})".format(self.name, self.class_name, self.level, self.has_formatter, self.filter_cnt)
+        return "{} - Handler ({{class:'{}', level:{}, formatter:{}, filters:{}}})".format(self.name, self.class_name, self.level, self.has_formatter, self.filter_cnt)
 
 class FormatterInfo(object):
     def __init__(self, format_string):
@@ -56,7 +56,7 @@ class FormatterInfo(object):
         return "<FormatterInfo fmt: {}>".format(self.fmt)
 
     def __str__(self):
-        return "(FormatterInfo {{fmt:'{}'}})".format(self.fmt)
+        return "Formatter ({{fmt:'{}'}})".format(self.fmt)
 
 class FilterInfo(object):
     """
@@ -79,7 +79,7 @@ class FilterInfo(object):
         return "<FilterInfo class: {}>".format(self.class_name)
 
     def __str__(self):
-        return "{} (FilterInfo {{class:'{}'}})".format(self.class_name)
+        return "{} - Filter ({{class:'{}'}})".format(self.class_name)
 
 class LoggerInfo(object):
     """
@@ -131,7 +131,7 @@ class LoggerInfo(object):
         return "<LoggerInfo name: '{}' level: {} propagate: {} handlers: {} filters: {}>".format(self.name, self.level, self.propagate, self.handler_cnt, self.filter_cnt)
 
     def __str__(self):
-        return "{} (LoggerInfo {{level:'{}', propagate:{}, handlers:{}, filters:{}}})".format(self.name, self.level, self.propagate, self.handler_cnt, self.filter_cnt)
+        return "{} - Logger ({{level:{}, propagate:{}, handlers:{}, filters:{}}})".format(self.name, self.level, self.propagate, self.handler_cnt, self.filter_cnt)
 
 class LoggerPlaceHolderInfo(object):
     """
@@ -166,7 +166,7 @@ class LoggerPlaceHolderInfo(object):
         return "<LoggerPlaceHolderInfo name: '{}'>".format(self.name)
 
     def __str__(self):
-        return "{} (LoggerPlaceHolderInfo)".format(self.name)
+        return "{} - LoggerPlaceHolder".format(self.name)
 
 class InfoFactory(object):
     """
