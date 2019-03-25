@@ -1,8 +1,8 @@
-__all__ = "DD_OS DD_SHOW DD_SEQ DD_SHOT DD_USER DD_FORMAT".split()
-DD_OS = "DD_OS"
-DD_SHOW = "DD_SHOW"
-DD_SEQ = "DD_SEQ"
-DD_SHOT = "DD_SHOT"
-DD_USER = "DD_USER"
+__all__ = "AD_OS AD_SHOW AD_SEQ AD_SHOT AD_USER AD_FORMAT".split()
+AD_OS = "AD_OS"
+AD_SHOW = "AD_SHOW"
+AD_SEQ = "AD_SEQ"
+AD_SHOT = "AD_SHOT"
+AD_USER = "AD_USER"
 
-DD_FORMAT = "%(name)-15s | %(dd_level)-8s | %(dd_os)-5s | %(levelname)-8s | %(message)s"
+AD_FORMAT = "%(name)-15s | %(ad_level)-8s | %(ad_os)-5s | %(levelname)-8s | %(message)s"

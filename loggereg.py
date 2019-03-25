@@ -7,8 +7,8 @@ import os
 LOGGING = {
         'version': 1,
         'filters': {
-            'ddfilter': {
-                '()': customfilter.DdFilter,
+            'adfilter': {
+                '()': customfilter.AdFilter,
             }
         },
         'formatters': {
@@ -16,23 +16,23 @@ LOGGING = {
                 'class': 'logging.Formatter',
                 'format': '%(asctime)s %(name)-15s %(levelname)-8s %(processName)-10s %(message)s'
             },
-            'dd': {
+            'ad': {
                 'class': 'logging.Formatter',
-                'format': constants.DD_FORMAT
+                'format': constants.AD_FORMAT
             }
         },
         'handlers': {
             'console': {
                 'class': 'logging.StreamHandler',
                 'level': 'INFO',
-                'formatter': 'dd',
-                'filters': ['ddfilter']
+                'formatter': 'ad',
+                'filters': ['adfilter']
             },
-            'ddconsole': {
+            'adconsole': {
                 'class': 'logging.StreamHandler',
                 'level': 'DEBUG',
-                'formatter': 'dd',
-                'filters': ['ddfilter']
+                'formatter': 'ad',
+                'filters': ['adfilter']
             },
             'file': {
                 'class': 'logging.FileHandler',
@@ -40,12 +40,12 @@ LOGGING = {
                 'mode': 'w',
                 'formatter': 'detailed',
             },
-            'ddfile': {
+            'adfile': {
                 'class': 'logging.FileHandler',
                 'filename': 'mplog.log',
                 'mode': 'w',
-                'formatter': 'dd',
-                'filters': ['ddfilter']
+                'formatter': 'ad',
+                'filters': ['adfilter']
             },
             'errors': {
                 'class': 'logging.FileHandler',
@@ -56,10 +56,10 @@ LOGGING = {
             },
         },
         'loggers': {
-            'dd': {
+            'ad': {
                 'level': 'DEBUG',
                 'propagate': False,
-                'handlers': ['ddfile', 'ddconsole']
+                'handlers': ['adfile', 'adconsole']
             }
         },
         'root': {
@@ -70,21 +70,21 @@ LOGGING = {
 logging.config.dictConfig(LOGGING)
 
 def doit():
-    os.environ['DD_SHOW'] = "SRGTBILKO"
-    os.environ["DD_USER"] = "clu"
-    os.environ["DD_OS"] = "cent7_64"
+    os.environ['AD_SHOW'] = "SRGTBILKO"
+    os.environ["AD_USER"] = "clu"
+    os.environ["AD_OS"] = "cent7_64"
 
     root_log = logging.getLogger()
-    dd_log = logging.getLogger("dd."+ __name__)
+    ad_log = logging.getLogger("ad."+ __name__)
 
     root_log.debug("a root debug message")
-    dd_log.debug("a dd debug message")
+    ad_log.debug("a ad debug message")
 
     root_log.info("a root info message")
-    dd_log.info("a dd info message")
+    ad_log.info("a ad info message")
 
     root_log.warn("a root warn message")
-    dd_log.warn("a dd warn message")
+    ad_log.warn("a ad warn message")
 
 
 if __name__ == "__main__":

@@ -3,17 +3,17 @@ import os
 
 from .constants import *
 
-class DdFilter(logging.Filter):
+class AdFilter(logging.Filter):
     """
-    Custom filter test
+    Custom filter test for a ficticious VFX company called Analog Domain, or AD
     """
     def filter(self, record):
-        record.dd_level = self._get_level()
-        record.dd_user = os.environ.get("DD_USER")
-        record.dd_os = os.environ.get("DD_OS")
+        record.ad_level = self._get_level()
+        record.ad_user = os.environ.get("AD_USER")
+        record.ad_os = os.environ.get("AD_OS")
         return True
 
     def _get_level(self):
-        return ".".join(filter(None,[os.environ.get(x) for x in ("DD_SHOW", "DD_SEQ", "DD_SHOT")]))
+        return ".".join(filter(None,[os.environ.get(x) for x in ("AD_SHOW", "AD_SEQ", "AD_SHOT")]))
 
 
